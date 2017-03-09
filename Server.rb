@@ -7,23 +7,31 @@ db = SQLite3::Database.open "WS.db"
 activeUsers = Hash.new "Users"
 
 
-def addClient(name,pwd)
+def addClient(nameC,pwd)
 	db.execute "CREATE TABLE IF NOT EXISTS Users(Id INTEGER PRIMARY KEY, Name TEXT, Password TEXT)"
-	db.execute "INSERT INTO Users VALUES(?,?)",name,pwd
+	db.execute "INSERT INTO Users VALUES(?,?)",nameC,pwd
 	id = db.last_insert_row_id
 	rescue SQLite3::Exception => e 
     nil
 end
 
-def logUser(name,pwd)
+def logUser(nameC,pwd)
 	statement = db.prepare "SELECT id FROM Users WHERE Name=? and Password = ?"
-    statement.bind_param 1,name
-    statement.bind_param 2 , pwd
+    statement.bind_param 1,nameC
+    statement.bind_param 2,pwd
     
     rs = statement.execute 
     row = rs.next
 	rescue SQLite3::Exception => e 
     nil
+end
+
+def userNameG(id)
+	statement = db.prepare "SELECT Name FROM Users WHERE Id=?"
+	statement.bind_param 1,id
+  
+    rs = statement.execute 
+    row = rs.next
 end
 
 def addReading(id,type,value,location,timestamp)
@@ -39,6 +47,9 @@ def listReads(id)
     rs.each do |row|
         puts row.join " - "
     end
+
+    rescue SQLite3::Exception => e 
+    puts "Erro"
 end
 
 loop {                          # Servers run forever
@@ -52,7 +63,10 @@ userID = logUser user,pwd
 if userID
 	connect.puts "OK"
 	connect.puts "#{userID}"
-	activeUsers[id] = "Nome";
+	connectName = userNameG userId
+	activeUsers[userId] = connectName;
+	puts "O cliente #{connectName} acabou de se Ligar"
+
 	#leiturass
 	#gets ID tipo leitura gps timestamp
 else
@@ -61,13 +75,16 @@ else
 end
 
 when "registo"
-user = connect.gets.chomp 
-pwd = connect.gets.chomp
-newID = addClient user,pwd
+	user = connect.gets.chomp 
+	pwd = connect.gets.chomp
+	newID = addClient user,pwd
 if newID
-connect.puts "OK"
-connect.puts "#{newID}"
-activeUsers[id] = "Nome";
+	connect.puts "OK"
+	connect.puts "#{newID}"
+	connectName = userNameG newID
+	activeUsers[newID] = connectName;
+	puts "O cliente #{connectName} acabou de se Ligar"
+
 #leituras
 else
 	connect.puts "KO"
