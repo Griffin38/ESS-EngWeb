@@ -1,14 +1,14 @@
-
+require 'socket'  
 require 'sqlite3'
 
 
     
 db = SQLite3::Database.open "WS.db"
 activeUsers = Hash.new "Users"
-
+server = TCPServer.open(2000) 
 
 def addClient(nameC,pwd)
-	db.execute "CREATE TABLE IF NOT EXISTS Users(Id INTEGER PRIMARY KEY, Name TEXT, Password TEXT)"
+
 	db.execute "INSERT INTO Users VALUES(?,?)",nameC,pwd
 	id = db.last_insert_row_id
 	rescue SQLite3::Exception => e 
@@ -35,7 +35,7 @@ def userNameG(id)
 end
 
 def addReading(id,type,value,location,timestamp)
-	#db.execute "CREATE TABLE IF NOT EXISTS Readings(Id INTEGER PRIMARY KEY, UserId INTEGER PRIMARY KEY, Sensor TEXT,Value INTEGER,LATitude FLOAT,Longitude FLOAT,RANGE FLOAT,timestamp )"
+	
 	#db.execute "INSERT INTO Users VALUES(?,?)",name,pwd
 end
 
@@ -52,7 +52,10 @@ def listReads(id)
     puts "Erro"
 end
 
-loop {                          # Servers run forever
+db.execute "CREATE TABLE IF NOT EXISTS Users(Id INTEGER AUTO_INCREMENT PRIMARY KEY, Name TEXT NOT NULL , Pwd TEXT NOT NULL)"
+db.execute "CREATE TABLE IF NOT EXISTS Readings(R_Id INTEGER AUTO_INCREMENT PRIMARY KEY, U_id INTEGER NOT NULL, Sensor TEXT,Valor REAL ,Latitude REAL,Longitude REAL,Ran REAL, TimeS datetime,FOREIGN KEY(U_Id) REFERENCES  Users(Id))"
+Thread.new{
+	                      # Servers run forever
 connect = server.accept
 line = connect.gets
 case line.chomp
@@ -92,6 +95,9 @@ else
 end
 
 end
+}
+
+loop {   
 
 puts "Funcionablidades:\n 1 - Clientes Ativos\n2 - Leituras de Cliente\n"
 cmd = gets
@@ -105,5 +111,11 @@ when "2"
 	listReads idP
 else puts "Invalido"
 end
+
+
+
 }
 
+#falta quando se desligam um cliente
+#add a tabela de Leituras
+# time stamp e data e hora ou so horas ou ambos mas separados
