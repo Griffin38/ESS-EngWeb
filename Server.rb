@@ -3,25 +3,26 @@ require 'sqlite3'
 
 
  #BD / Utilizadores ativos / Socket TCP   
-db = SQLite3::Database.open "WS.db"
+@db = SQLite3::Database.open "WS.db"
 activeUsers = Hash.new "Users"
 server = TCPServer.open(2000) 
 
 def addClient(nameC,pwd)
-
-	db.execute "INSERT INTO Users VALUES(?,?)",nameC,pwd
-	id = db.last_insert_row_id
+	
+	@db.execute "INSERT INTO Users(Name,Pwd) VALUES(?,?)",nameC,pwd
+	id = @db.last_insert_row_id
 	rescue SQLite3::Exception => e 
     nil
 end
 
 def logUser(nameC,pwd)
-	statement = db.prepare "SELECT id FROM Users WHERE Name=? and Password = ?"
+	statement = @db.prepare "SELECT ID FROM Users WHERE Name LIKE ? and Pwd LIKE ?"
     statement.bind_param 1,nameC
     statement.bind_param 2,pwd
     
     rs = statement.execute 
     row = rs.next
+   
 	rescue SQLite3::Exception => e 
     nil
 end
@@ -35,7 +36,7 @@ def logOffUser(id,connectS)
 end
 
 def userNameG(id)
-	statement = db.prepare "SELECT Name FROM Users WHERE Id=?"
+	statement = @db.prepare "SELECT Name FROM Users WHERE ID = ?"
 	statement.bind_param 1,id
   
     rs = statement.execute 
@@ -48,7 +49,7 @@ def addReading(id,type,value,location,timestamp)
 end
 
 def listReads(id)
-	statement = db.prepare "SELECT * FROM Readings where UserId = ?"
+	statement = @db.prepare "SELECT * FROM Readings where UserId = ?"
 	statement.bind_param 1,id 
     rs = statement.execute 
     puts "ID - ClientID - Type - Value - Lat - Long - Time "
@@ -63,7 +64,7 @@ end
 def trataCliente(connect,id)
 	line = connect.gets
 
-	while line.chomp != "Sair"
+	while line.chop != "Sair"
 		#gets ID tipo leitura gps timestamp
 		line = connect.gets
 	end
@@ -76,20 +77,20 @@ end
 
 #Main Loop e Comandos
 
-db.execute "CREATE TABLE IF NOT EXISTS Users(Id INTEGER AUTO_INCREMENT PRIMARY KEY, Name TEXT NOT NULL , Pwd TEXT NOT NULL)"
-db.execute "CREATE TABLE IF NOT EXISTS Readings(R_Id INTEGER AUTO_INCREMENT PRIMARY KEY, U_id INTEGER NOT NULL, Sensor TEXT,Valor REAL ,Latitude REAL,Longitude REAL, TimeS datetime,FOREIGN KEY(U_Id) REFERENCES  Users(Id))"
+@db.execute "CREATE TABLE IF NOT EXISTS Users(ID INTEGER PRIMARY KEY   AUTOINCREMENT, Name TEXT NOT NULL , Pwd TEXT NOT NULL);"
+@db.execute "CREATE TABLE IF NOT EXISTS Readings(ID INTEGER PRIMARY KEY   AUTOINCREMENT, U_id INTEGER NOT NULL, Sensor TEXT,Valor REAL ,Latitude REAL,Longitude REAL, TimeS datetime,FOREIGN KEY(U_Id) REFERENCES  Users(Id));"
 Thread.new{
 i = true
 while i == true do
-puts "Funcionablidades:\n 1 - Clientes Ativos\n2 - Leituras de Cliente\n3 - Sair"
+puts "Funcionalidades:\n 1 - Clientes Ativos\n2 - Leituras de Cliente\n3 - Sair"
 cmd = gets
-case cmd.chomp
+case cmd.chop
 when "1"
 	puts "ID - NAME"
 	activeUsers.each_pair { |id, nome| puts "#{id} - #{nome}"  }
 when "2"
 	puts "Id de Cliente\n"
-	idP = gets.chomp.to_i
+	idP = gets.chop.to_i
 	listReads idP
 when "3"
 	i = false
@@ -103,12 +104,12 @@ loop {       # Servers run forever
 
 connect = server.accept
 line = connect.gets
-case line.chomp
+case line.chop
 when "login"
-user = connect.gets.chomp 
-pwd = connect.gets.chomp
+user = connect.gets.chop 
+pwd = connect.gets.chop
 userID = logUser user,pwd
-if userID
+if userID != nil
 	connect.puts "OK"
 	connect.puts "#{userID}"
 	connectName = userNameG userId
@@ -122,10 +123,10 @@ else
 end
 
 when "registo"
-	user = connect.gets.chomp 
-	pwd = connect.gets.chomp
+	user = connect.gets.chop 
+	pwd = connect.gets.chop
 	newID = addClient user,pwd
-if newID
+if newID != nil
 	connect.puts "OK"
 	connect.puts "#{newID}"
 	connectName = userNameG newID

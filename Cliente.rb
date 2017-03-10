@@ -1,6 +1,6 @@
 require "socket"
 
-server = TCPSocket.open("localhost", 2626)
+server = TCPSocket.open("localhost", 2000)
 
 puts "O que deseja fazer? (login/registo)"
 
@@ -8,30 +8,35 @@ case gets.chomp
 when "login"
 	server.puts "login"
 	puts "Introduza as suas credenciais!"
-	puts "Login:"
-	login = gets.chomp
-	server.puts "#{login}"
+	puts "Username:"
+	username = gets.chomp
+	server.puts "#{username}"
 	puts "Password:"
 	password = gets.chomp
 	server.puts "#{password}"
 	resposta = server.gets
-	if resposta = "OK"
-		simula()
-	else server.close
+	if resposta == "OK"
+		puts "CHEGOU AO OK"
+		id = server.gets
+		simula(id)
+	else 
+		puts "CHEGOU AO ELSE"
+		server.close
 	end	
 
 when "registo"
 	server.puts "registo"
 	puts "Introduza as credenciais desejadas:"
-	puts "Login:"
-	login = gets.chomp
-	server.puts "#{login}"
+	puts "Username:"
+	username = gets.chomp
+	server.puts "#{username}"
 	puts "Password:"
 	password = gets.chomp
 	server.puts "#{password}"
-
-	if resposta = "OK"
-		simula()
+	resposta = server.gets
+	if resposta == "OK"
+		id = server.gets
+		simula(id)
 	else server.close
 	end
 
@@ -39,36 +44,39 @@ else puts "Opcao invalida!"
 
 end
 
-def simula()
+def simula(id)
 puts "PARA TERMINAR ESCREVA: CLOSE"
 @temp = 0
 @ruido = 0
 
-   Thread.new {
-   loop
+   temperatura = Thread.new {
+   loop {
    sleep(30)
    @temp++
    value = rand(-40..80)
    latitude = rand(-90.000000000...90.000000000)
    longitude = rand(-180.000000000...180.000000000)
    time = Time.now.getutc
-   server.puts "Nome: #{login} | Tipo: Temperatura | Valor: #{value} | GPS: #{latitude}, #{longitude} | Timestamp: #{time}"
-   end
+   server.puts "#{id} Temperatura #{value} #{latitude} #{longitude} #{time}"
+    }
    }   
    
-   Thread.new {
-   loop
+   acustica = Thread.new {
+   loop {
    sleep(1)
    @ruido++
    value = rand(0..200)
    latitude = rand(-90.000000000...90.000000000)
    longitude = rand(-180.000000000...180.000000000)
    time = Time.now.getutc
-   server.puts "Nome: #{login} | Tipo: Acustica | Valor: #{value} | GPS: #{latitude}, #{longitude} | Timestamp: #{time}"
-   end
+   server.puts "#{id} Acustica #{value} #{latitude} #{longitude} #{time}"
+    }
    }   
 
 if gets.chomp == "CLOSE" || gets.chomp == "close"
+	Thread.kill(temperatura) 
+	Thread.kill(acustica) 
+	server.puts "Sair"
 	total_leituras = @temp + @ruido
 	server.puts "TOTAL DE LEITURAS: #{total_leituras}"
 	puts "TOTAL DE LEITURAS: #{total_leituras}"
