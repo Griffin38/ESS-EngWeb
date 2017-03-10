@@ -3,7 +3,7 @@ require "socket"
 server = TCPSocket.open("localhost", 2000)
 
 def simula(id,server)
-puts "PARA TERMINAR ESCREVA: CLOSE"
+
 @temp = 0
 @ruido = 0
 
@@ -30,7 +30,7 @@ puts "PARA TERMINAR ESCREVA: CLOSE"
    server.puts "#{id} Acustica #{value} #{latitude} #{longitude} #{time}"
     }
    }   
-
+puts "PARA TERMINAR ESCREVA: CLOSE"
 if gets.chomp == "CLOSE" || gets.chomp == "close"
 	Thread.kill(temperatura) 
 	Thread.kill(acustica) 
@@ -60,11 +60,11 @@ when "login"
 	resposta = server.gets
 	case resposta.chomp
 	when "OK"
-		puts "CHEGOU AO OK"
+		
 		id = server.gets
 		simula(id,server)
 	else 
-		puts "CHEGOU AO ELSE -#{resposta}-"
+		
 		server.close
 	end	
 

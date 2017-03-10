@@ -44,9 +44,12 @@ def userNameG(idU)
     rr = row.first
 end
 
-def addReading(id,type,value,location,timestamp)
-	
-	#db.execute "INSERT INTO Users VALUES(?,?)",name,pwd
+def addReading(line)
+	vals = line.split ' '
+	puts "reading #{line} \n #{vals}\n"
+	db.execute "INSERT INTO Readings(U_id,Sensor,Valor,Latitude,Longitude,TimeS) VALUES(?,?,?,?,?,?)",vals[0],vals[1],vals[2],vals[3],vals[4],vals[5]
+	rescue SQLite3::Exception => e 
+    puts "Erro :#{e}"
 end
 
 def listReads(id)
@@ -59,14 +62,14 @@ def listReads(id)
     end
 
     rescue SQLite3::Exception => e 
-    puts "Erro #{e}"
+    puts "Erro :#{e}"
 end
 
 def trataCliente(connect,id)
 	line = connect.gets
 
 	while line.chop != "Sair"
-		#gets ID tipo leitura gps timestamp
+		addReading(line)
 		line = connect.gets
 	end
 contagem = connect.gets
