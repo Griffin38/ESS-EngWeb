@@ -51,13 +51,13 @@ def listReads(id)
 	statement = db.prepare "SELECT * FROM Readings where UserId = ?"
 	statement.bind_param 1,id 
     rs = statement.execute 
-    puts "ID - ClientID - Type - Value - Lat - Long - Range - Time "
+    puts "ID - ClientID - Type - Value - Lat - Long - Time "
     rs.each do |row|
         puts row.join " - "
     end
 
     rescue SQLite3::Exception => e 
-    puts "Erro"
+    puts "Erro #{e}"
 end
 
 def trataCliente(connect,id)
@@ -77,7 +77,7 @@ end
 #Main Loop e Comandos
 
 db.execute "CREATE TABLE IF NOT EXISTS Users(Id INTEGER AUTO_INCREMENT PRIMARY KEY, Name TEXT NOT NULL , Pwd TEXT NOT NULL)"
-db.execute "CREATE TABLE IF NOT EXISTS Readings(R_Id INTEGER AUTO_INCREMENT PRIMARY KEY, U_id INTEGER NOT NULL, Sensor TEXT,Valor REAL ,Latitude REAL,Longitude REAL,Ran REAL, TimeS datetime,FOREIGN KEY(U_Id) REFERENCES  Users(Id))"
+db.execute "CREATE TABLE IF NOT EXISTS Readings(R_Id INTEGER AUTO_INCREMENT PRIMARY KEY, U_id INTEGER NOT NULL, Sensor TEXT,Valor REAL ,Latitude REAL,Longitude REAL, TimeS datetime,FOREIGN KEY(U_Id) REFERENCES  Users(Id))"
 Thread.new{
 i = true
 while i == true do
@@ -95,11 +95,11 @@ when "3"
 	i = false
 else puts "Invalido"
 end	
-end                      # Servers run forever
+end                  
 
 }
 
-loop {   
+loop {       # Servers run forever
 
 connect = server.accept
 line = connect.gets
