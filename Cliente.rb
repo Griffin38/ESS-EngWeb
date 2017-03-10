@@ -9,25 +9,27 @@ def simula(id,server)
 
    temperatura = Thread.new {
    loop {
-   sleep(30)
-   @temp++
+   
+   @temp=@temp+1
    value = rand(-40..80)
    latitude = rand(-90.000000000...90.000000000)
    longitude = rand(-180.000000000...180.000000000)
    time = Time.now.getutc
    server.puts "#{id} Temperatura #{value} #{latitude} #{longitude} #{time}"
+   sleep(30)
     }
    }   
    
    acustica = Thread.new {
    loop {
-   sleep(1)
-   @ruido++
+   
+   @ruido = @ruido+ 1
    value = rand(0..200)
    latitude = rand(-90.000000000...90.000000000)
    longitude = rand(-180.000000000...180.000000000)
    time = Time.now.getutc
    server.puts "#{id} Acustica #{value} #{latitude} #{longitude} #{time}"
+   sleep(1)
     }
    }   
 puts "PARA TERMINAR ESCREVA: CLOSE"

@@ -46,10 +46,10 @@ end
 
 def addReading(line)
 	vals = line.split ' '
-	puts "reading #{line} \n #{vals}\n"
-	db.execute "INSERT INTO Readings(U_id,Sensor,Valor,Latitude,Longitude,TimeS) VALUES(?,?,?,?,?,?)",vals[0],vals[1],vals[2],vals[3],vals[4],vals[5]
-	rescue SQLite3::Exception => e 
-    puts "Erro :#{e}"
+	puts "reading: #{line} \nvals: #{vals}\n"
+	#db.execute "INSERT INTO Readings(U_id,Sensor,Valor,Latitude,Longitude,TimeS) VALUES(?,?,?,?,?,?)",vals[0],vals[1],vals[2],vals[3],vals[4],vals[5]
+	#rescue SQLite3::Exception => e 
+    #puts "Erro :#{e}"
 end
 
 def listReads(id)
