@@ -22,7 +22,7 @@ def logUser(nameC,pwd)
     
     rs = statement.execute 
     row = rs.next
-   
+ 
 	rescue SQLite3::Exception => e 
     nil
 end
@@ -35,12 +35,13 @@ def logOffUser(id,connectS)
 
 end
 
-def userNameG(id)
-	statement = @db.prepare "SELECT Name FROM Users WHERE ID = ?"
-	statement.bind_param 1,id
+def userNameG(idU)
+	statement = @db.prepare "SELECT Name FROM Users WHERE ID LIKE ?"
+	statement.bind_param 1,idU
   
     rs = statement.execute 
     row = rs.next
+    rr = row.first
 end
 
 def addReading(id,type,value,location,timestamp)
@@ -49,7 +50,7 @@ def addReading(id,type,value,location,timestamp)
 end
 
 def listReads(id)
-	statement = @db.prepare "SELECT * FROM Readings where UserId = ?"
+	statement = @db.prepare "SELECT * FROM Readings where U_id = ?"
 	statement.bind_param 1,id 
     rs = statement.execute 
     puts "ID - ClientID - Type - Value - Lat - Long - Time "
@@ -108,14 +109,15 @@ case line.chop
 when "login"
 user = connect.gets.chop 
 pwd = connect.gets.chop
-userID = logUser user,pwd
-if userID != nil
+userC = logUser user,pwd
+if userC != nil
+	userID = userC.first
 	connect.puts "OK"
 	connect.puts "#{userID}"
-	connectName = userNameG userId
-	activeUsers[userId] = connectName;
+	connectName = userNameG userID
+	activeUsers[userID] = connectName;
 	puts "O cliente #{connectName} acabou de se Ligar"
-	Thread.new {trataCliente connect,userId}
+	Thread.new {trataCliente connect,userID}
 	
 else
 	connect.puts "KO"
