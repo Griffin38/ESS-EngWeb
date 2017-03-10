@@ -148,4 +148,3 @@ end
 
 }
 
-#falta quando se desligam um cliente

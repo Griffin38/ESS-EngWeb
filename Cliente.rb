@@ -2,49 +2,7 @@ require "socket"
 
 server = TCPSocket.open("localhost", 2000)
 
-puts "O que deseja fazer? (login/registo)"
-
-case gets.chomp
-when "login"
-	server.puts "login"
-	puts "Introduza as suas credenciais!"
-	puts "Username:"
-	username = gets.chomp
-	server.puts "#{username}"
-	puts "Password:"
-	password = gets.chomp
-	server.puts "#{password}"
-	resposta = server.gets
-	if resposta == "OK"
-		puts "CHEGOU AO OK"
-		id = server.gets
-		simula(id)
-	else 
-		puts "CHEGOU AO ELSE"
-		server.close
-	end	
-
-when "registo"
-	server.puts "registo"
-	puts "Introduza as credenciais desejadas:"
-	puts "Username:"
-	username = gets.chomp
-	server.puts "#{username}"
-	puts "Password:"
-	password = gets.chomp
-	server.puts "#{password}"
-	resposta = server.gets
-	if resposta == "OK"
-		id = server.gets
-		simula(id)
-	else server.close
-	end
-
-else puts "Opcao invalida!"
-
-end
-
-def simula(id)
+def simula(id,server)
 puts "PARA TERMINAR ESCREVA: CLOSE"
 @temp = 0
 @ruido = 0
@@ -84,6 +42,54 @@ if gets.chomp == "CLOSE" || gets.chomp == "close"
 end
 
 end
+
+
+
+puts "O que deseja fazer? (login/registo)"
+
+case gets.chomp
+when "login"
+	server.puts "login"
+	puts "Introduza as suas credenciais!"
+	puts "Username:"
+	username = gets.chomp
+	server.puts "#{username}"
+	puts "Password:"
+	password = gets.chomp
+	server.puts "#{password}"
+	resposta = server.gets
+	case resposta.chomp
+	when "OK"
+		puts "CHEGOU AO OK"
+		id = server.gets
+		simula(id,server)
+	else 
+		puts "CHEGOU AO ELSE -#{resposta}-"
+		server.close
+	end	
+
+when "registo"
+	server.puts "registo"
+	puts "Introduza as credenciais desejadas:"
+	puts "Username:"
+	username = gets.chomp
+	server.puts "#{username}"
+	puts "Password:"
+	password = gets.chomp
+	server.puts "#{password}"
+	resposta = server.gets
+	case resposta.chomp
+	when "OK"
+		id = server.gets
+		simula(id,server)
+	else server.close
+	end
+
+else puts "Opcao invalida!"
+
+end
+
+
 
 
 
