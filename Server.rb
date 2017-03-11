@@ -1,10 +1,10 @@
 require 'socket'  
 require 'sqlite3'
-
+require 'time'
 
  #BD / Utilizadores ativos / Socket TCP   
 @db = SQLite3::Database.open "WS.db"
-activeUsers = Hash.new "Users"
+@activeUsers = Hash.new "Users"
 server = TCPServer.open(2000) 
 
 def addClient(nameC,pwd)
@@ -30,7 +30,7 @@ end
 def logOffUser(id,connectS)
 	nome = userNameG id
 	puts "O cliente #{nome} acabou de sair"
-	activeUsers.delete(id)
+	@activeUsers.delete(id)
 	connectS.close
 
 end
@@ -44,10 +44,13 @@ def userNameG(idU)
     rr = row.first
 end
 
-def addReading(line)
+def addReading(id,line)
+
 	vals = line.split ' '
-	puts "reading: #{line} \nvals: #{vals}\n"
-	#db.execute "INSERT INTO Readings(U_id,Sensor,Valor,Latitude,Longitude,TimeS) VALUES(?,?,?,?,?,?)",vals[0],vals[1],vals[2],vals[3],vals[4],vals[5]
+	puts "id: #{id} vals: #{vals}\n"
+	#date = Date.parse vals[4]
+	#ime = Time.parse vals[5]
+	#db.execute "INSERT INTO Readings(U_id,Sensor,Valor,Latitude,Longitude,DateS,TimeS) VALUES(?,?,?,?,?,?)",id,vals[0],vals[1].to_r,vals[2].to_r,vals[3].to_r,date,time
 	#rescue SQLite3::Exception => e 
     #puts "Erro :#{e}"
 end
@@ -56,7 +59,7 @@ def listReads(id)
 	statement = @db.prepare "SELECT * FROM Readings where U_id = ?"
 	statement.bind_param 1,id 
     rs = statement.execute 
-    puts "ID - ClientID - Type - Value - Lat - Long - Time "
+    puts "ID - ClientID - Type - Value - Lat - Long - Date - Time "
     rs.each do |row|
         puts row.join " - "
     end
@@ -69,7 +72,8 @@ def trataCliente(connect,id)
 	line = connect.gets
 
 	while line.chop != "Sair"
-		addReading(line)
+		
+		addReading(id,line)
 		line = connect.gets
 	end
 contagem = connect.gets
@@ -82,7 +86,7 @@ end
 #Main Loop e Comandos
 
 @db.execute "CREATE TABLE IF NOT EXISTS Users(ID INTEGER PRIMARY KEY   AUTOINCREMENT, Name TEXT NOT NULL , Pwd TEXT NOT NULL);"
-@db.execute "CREATE TABLE IF NOT EXISTS Readings(ID INTEGER PRIMARY KEY   AUTOINCREMENT, U_id INTEGER NOT NULL, Sensor TEXT,Valor REAL ,Latitude REAL,Longitude REAL, TimeS datetime,FOREIGN KEY(U_Id) REFERENCES  Users(Id));"
+@db.execute "CREATE TABLE IF NOT EXISTS Readings(ID INTEGER PRIMARY KEY   AUTOINCREMENT, U_id INTEGER NOT NULL, Sensor TEXT,Valor REAL ,Latitude REAL,Longitude REAL,DateS date, TimeS time,FOREIGN KEY(U_Id) REFERENCES  Users(Id));"
 Thread.new{
 i = true
 while i == true do
@@ -91,7 +95,7 @@ cmd = gets
 case cmd.chop
 when "1"
 	puts "ID - NAME"
-	activeUsers.each_pair { |id, nome| puts "#{id} - #{nome}"  }
+	@activeUsers.each_pair { |id, nome| puts "#{id} - #{nome}"  }
 when "2"
 	puts "Id de Cliente\n"
 	idP = gets.chop.to_i
@@ -116,9 +120,8 @@ userC = logUser user,pwd
 if userC != nil
 	userID = userC.first
 	connect.puts "OK"
-	connect.puts "#{userID}"
 	connectName = userNameG userID
-	activeUsers[userID] = connectName;
+	@activeUsers[userID] = connectName;
 	puts "O cliente #{connectName} acabou de se Ligar"
 	Thread.new {trataCliente connect,userID}
 	
@@ -133,9 +136,8 @@ when "registo"
 	newID = addClient user,pwd
 if newID != nil
 	connect.puts "OK"
-	connect.puts "#{newID}"
 	connectName = userNameG newID
-	activeUsers[newID] = connectName;
+	@activeUsers[newID] = connectName;
 	puts "O cliente #{connectName} acabou de se Ligar"
 	Thread.new {trataCliente connect,newID}
 
