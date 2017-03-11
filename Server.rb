@@ -153,3 +153,6 @@ end
 
 }
 
+#Listar	os	clientes	que	estão	‘ligados’ e	a	sua	respetiva	localização. FALTA LOCALIZAÇAO.
+#Listar	os	valores	lidos	de	um	determinado	sensor,	sendo	fornecido	como	parâmetro	um	identificador	único	do	cliente. FALTA ESCOLHER SENSOR TEMP OU ACUS
+#O	servidor	deverá	armazenar	os	valores	dos diferentes	simuladores	de	forma	persistente base	dados.    FALTA GUARDAR READINGS
