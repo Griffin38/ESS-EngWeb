@@ -65,15 +65,12 @@ def addReading(id,line)
 	userloc = @activeUsers[id]
 	vals = line.split ' '
 	puts "id: #{id} vals: #{vals}\n"
-	latitude = vals[2].to_f
-	longitude = vals[3].to_f
-	userloc.latitude = latitude
-	userloc.longitude = longitude
-	#date = Date.parse vals[4]
-	#ime = Time.parse vals[5]
-	#db.execute "INSERT INTO Readings(U_id,Sensor,Valor,Latitude,Longitude,DateS,TimeS) VALUES(?,?,?,?,?,?)",id,vals[0],vals[1].to_r,vals[2].to_r,vals[3].to_r,date,time
-	#rescue SQLite3::Exception => e 
-    #puts "Erro :#{e}"
+	@db.execute "INSERT INTO Readings ( U_id, Sensor, Valor, Latitude, Longitude, DateS, TimeS ) VALUES ( ?, ?, ?, ?, ?, ?, ? )", id, vals[0], vals[1], vals[2], vals[3], vals[4], vals[5]
+
+	
+	rescue SQLite3::Exception => e 
+    puts "Erro :#{e}"
+
 end
 
 def listReads(id)
@@ -107,7 +104,7 @@ end
 #Main Loop e Comandos
 
 @db.execute "CREATE TABLE IF NOT EXISTS Users(ID INTEGER PRIMARY KEY   AUTOINCREMENT, Name TEXT NOT NULL , Pwd TEXT NOT NULL);"
-@db.execute "CREATE TABLE IF NOT EXISTS Readings(ID INTEGER PRIMARY KEY   AUTOINCREMENT, U_id INTEGER NOT NULL, Sensor TEXT,Valor REAL ,Latitude REAL,Longitude REAL,DateS date, TimeS time,FOREIGN KEY(U_Id) REFERENCES  Users(Id));"
+@db.execute "CREATE TABLE IF NOT EXISTS Readings(ID INTEGER PRIMARY KEY   AUTOINCREMENT, U_id INTEGER NOT NULL, Sensor TEXT,Valor TEXT ,Latitude TEXT,Longitude TEXT,DateS TEXT, TimeS TEXT,FOREIGN KEY(U_Id) REFERENCES  Users(Id));"
 Thread.new{
 i = true
 while i == true do
