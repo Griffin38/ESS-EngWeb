@@ -2,6 +2,23 @@ require 'socket'
 require 'sqlite3'
 require 'time'
 
+#Classe de Utilizadores Activos
+
+class UserLocation  
+
+attr_reader :latitude, :longitude, :nome
+attr_writer :latitude, :longitude
+  def initialize(userID)  
+    # Instance variables
+    @nome = userID  
+    @longitude = 0.0
+    @latitude = 0.0
+  end
+
+end  
+
+
+
  #BD / Utilizadores ativos / Socket TCP   
 @db = SQLite3::Database.open "WS.db"
 @activeUsers = Hash.new "Users"
@@ -45,9 +62,13 @@ def userNameG(idU)
 end
 
 def addReading(id,line)
-
+	userloc = @activeUsers[id]
 	vals = line.split ' '
 	puts "id: #{id} vals: #{vals}\n"
+	latitude = vals[2].to_f
+	longitude = vals[3].to_f
+	userloc.latitude = latitude
+	userloc.longitude = longitude
 	#date = Date.parse vals[4]
 	#ime = Time.parse vals[5]
 	#db.execute "INSERT INTO Readings(U_id,Sensor,Valor,Latitude,Longitude,DateS,TimeS) VALUES(?,?,?,?,?,?)",id,vals[0],vals[1].to_r,vals[2].to_r,vals[3].to_r,date,time
@@ -72,7 +93,7 @@ def trataCliente(connect,id)
 	line = connect.gets
 
 	while line.chop != "Sair"
-		
+
 		addReading(id,line)
 		line = connect.gets
 	end
@@ -94,8 +115,8 @@ puts "Funcionalidades:\n 1 - Clientes Ativos\n2 - Leituras de Cliente\n3 - Sair"
 cmd = gets
 case cmd.chop
 when "1"
-	puts "ID - NAME"
-	@activeUsers.each_pair { |id, nome| puts "#{id} - #{nome}"  }
+	puts "ID - NAME - LATITUDE - LONGITUDE"
+	@activeUsers.each_pair { |id, loc| puts "#{id} - #{loc.nome} - #{loc.latitude} - #{loc.longitude}"  }
 when "2"
 	puts "Id de Cliente\n"
 	idP = gets.chop.to_i
@@ -121,7 +142,7 @@ if userC != nil
 	userID = userC.first
 	connect.puts "OK"
 	connectName = userNameG userID
-	@activeUsers[userID] = connectName;
+	@activeUsers[userID] = UserLocation.new(connectName)
 	puts "O cliente #{connectName} acabou de se Ligar"
 	Thread.new {trataCliente connect,userID}
 	
@@ -137,7 +158,7 @@ when "registo"
 if newID != nil
 	connect.puts "OK"
 	connectName = userNameG newID
-	@activeUsers[newID] = connectName;
+	@activeUsers[userID] = UserLocation.new(connectName)
 	puts "O cliente #{connectName} acabou de se Ligar"
 	Thread.new {trataCliente connect,newID}
 
@@ -153,6 +174,5 @@ end
 
 }
 
-#Listar	os	clientes	que	estão	‘ligados’ e	a	sua	respetiva	localização. FALTA LOCALIZAÇAO.
 #Listar	os	valores	lidos	de	um	determinado	sensor,	sendo	fornecido	como	parâmetro	um	identificador	único	do	cliente. FALTA ESCOLHER SENSOR TEMP OU ACUS
 #O	servidor	deverá	armazenar	os	valores	dos diferentes	simuladores	de	forma	persistente base	dados.    FALTA GUARDAR READINGS
