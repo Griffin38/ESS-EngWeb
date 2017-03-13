@@ -11,8 +11,8 @@ attr_writer :latitude, :longitude
   def initialize(userID)  
     # Instance variables
     @nome = userID  
-    @longitude 
-    @latitude 
+    @longitude = 0.0
+    @latitude = 0.0
   end
 
 end  
@@ -47,7 +47,7 @@ end
 def logOffUser(id,connectS)
 	nome = userNameG id
 	puts "O cliente #{nome} acabou de sair"
-	@activeUsers.delete id
+	@activeUsers.delete(id)
 	connectS.close
 
 end
@@ -64,9 +64,7 @@ end
 def addReading(id,line)
 	userloc = @activeUsers[id]
 	vals = line.split ' '
-	userloc.latitude = vals[2].to_f
-	userloc.longitude = vals[3].to_f
-	#puts "id: #{id} vals: #{vals}\n"
+	puts "id: #{id} vals: #{vals}\n"
 	@db.execute "INSERT INTO Readings ( U_id, Sensor, Valor, Latitude, Longitude, DateS, TimeS ) VALUES ( ?, ?, ?, ?, ?, ?, ? )", id, vals[0], vals[1], vals[2], vals[3], vals[4], vals[5]
 
 	
@@ -75,10 +73,9 @@ def addReading(id,line)
 
 end
 
-def listReads(id,sens)
-	statement = @db.prepare "SELECT * FROM Readings where U_id =  ? and Sensor LIKE ? "
+def listReads(id)
+	statement = @db.prepare "SELECT * FROM Readings where U_id = ?"
 	statement.bind_param 1,id 
-	statement.bind_param 2 ,sens
     rs = statement.execute 
     puts "ID - ClientID - Type - Value - Lat - Long - Date - Time "
     rs.each do |row|
@@ -89,13 +86,12 @@ def listReads(id,sens)
     puts "Erro :#{e}"
 end
 
-
 def trataCliente(connect,id)
 	line = connect.gets
 
 	while line.chop != "Sair"
 
-		addReading id,line
+		addReading(id,line)
 		line = connect.gets
 	end
 contagem = connect.gets
@@ -119,19 +115,9 @@ when "1"
 	puts "ID - NAME - LATITUDE - LONGITUDE"
 	@activeUsers.each_pair { |id, loc| puts "#{id} - #{loc.nome} - #{loc.latitude} - #{loc.longitude}"  }
 when "2"
-
 	puts "Id de Cliente\n"
 	idP = gets.chop.to_i
-	puts "Tipo : TEMPERATURA - 1 ACUSTICA - 2 "
-	tipoS = gets.chop.to_i
-	case tipoS
-when 1
-listReads idP,"Temperatura"
-when 2
-listReads idP,"Acustica"
-
-	end
-	
+	listReads idP
 when "3"
 	i = false
 else puts "Invalido"
@@ -153,7 +139,7 @@ if userC != nil
 	userID = userC.first
 	connect.puts "OK"
 	connectName = userNameG userID
-	@activeUsers[userID] = UserLocation.new connectName 
+	@activeUsers[userID] = UserLocation.new(connectName)
 	puts "O cliente #{connectName} acabou de se Ligar"
 	Thread.new {trataCliente connect,userID}
 	
@@ -169,7 +155,7 @@ when "registo"
 if newID != nil
 	connect.puts "OK"
 	connectName = userNameG newID
-	@activeUsers[userID] = UserLocation.new connectName
+	@activeUsers[userID] = UserLocation.new(connectName)
 	puts "O cliente #{connectName} acabou de se Ligar"
 	Thread.new {trataCliente connect,newID}
 
@@ -185,3 +171,5 @@ end
 
 }
 
+#Listar	os	valores	lidos	de	um	determinado	sensor,	sendo	fornecido	como	parâmetro	um	identificador	único	do	cliente. FALTA ESCOLHER SENSOR TEMP OU ACUS
+#O	servidor	deverá	armazenar	os	valores	dos diferentes	simuladores	de	forma	persistente base	dados.    FALTA GUARDAR READINGS
